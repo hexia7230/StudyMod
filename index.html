@@ -725,9 +725,14 @@
             savedSets.push(questionSet);
             localStorage.setItem('questionSets', JSON.stringify(savedSets));
 
-            // Load this question set
-            loadQuestionSet(questionSet);
-            alert(`Successfully imported "${questionSet.title}" with ${questionSet.questions.length} questions!`);
+// Remove existing set with same title
+savedSets = savedSets.filter(set => set.title !== questionSet.title);
+savedSets.push(questionSet);
+localStorage.setItem('questionSets', JSON.stringify(savedSets));
+
+// loadQuestionSet(questionSet);
+//alert(`Successfully imported "${questionSet.title}" with ${questionSet.questions.length} questions!`);
+
         }
 
         // Select question set from list
