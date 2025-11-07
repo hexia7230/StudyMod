@@ -647,8 +647,8 @@
 
         // Open question sets modal
         function openQuestionSetsModal() {
+                loadAvailableQuestionSets();
             document.getElementById('questionSetsModal').classList.add('show');
-            loadAvailableQuestionSets();
         }
 
         // Close question sets modal
@@ -671,44 +671,30 @@
         }
 
         // Parse question set from text file
-function parseQuestionSet(content) {
-    const lines = content.split('\n').map(line => line.trim()).filter(line => line);
+function parseQuestionSet(content, fileName = null) {
+    const lines = content.split('\n').map(l => l.trim()).filter(l => l);
+    if (lines.length < 2) return;
 
-    if (lines.length < 2) {
-        console.warn('x Invalid file format — skipping this file.');
-        return;
-    }
+    const [title, setName, passRateRaw] = lines[0].split(',').map(p => p.trim());
+    const passRate = parseInt(passRateRaw) || 70;
 
-    const headerParts = lines[0].split(',').map(part => part.trim());
-    if (headerParts.length < 3) {
-        console.warn('x Invalid header format — skipping this file.');
-        return;
-    }
-
-    const questionSet = {
-        title: headerParts[0],
-        setName: headerParts[1],
-        passRate: parseInt(headerParts[2]) || 70,
-        questions: []
+    const questionSet = { 
+        id: fileName ? `${title}_${fileName}` : `${title}_${Date.now()}`,
+        title, 
+        setName, 
+        passRate, 
+        questions: [] 
     };
 
-    // --- shuffle helper
-    function shuffleArray(arr) {
-        for (let i = arr.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-        return arr;
-    }
-
-    // Parse question lines
+    // --- 問題パース ---
     for (let i = 1; i < lines.length; i++) {
-        const parts = lines[i].split(',').map(part => part.trim());
+        const parts = lines[i].split(',').map(p => p.trim());
         if (parts.length < 7) continue;
 
         const allOptions = [parts[1], parts[2], parts[3], parts[4]];
-        const correctAnswer = parts[1]; 
-        const shuffled = shuffleArray([...allOptions]);
+        const correctAnswer = parts[1];
+
+        const shuffled = [...allOptions].sort(() => Math.random() - 0.5);
         const correctIndex = shuffled.indexOf(correctAnswer);
 
         questionSet.questions.push({
@@ -720,16 +706,19 @@ function parseQuestionSet(content) {
         });
     }
 
-     if (questionSet.questions.length === 0) return;
+    if (questionSet.questions.length === 0) return;
 
+    // --- localStorageの既存データを取得 ---
     const savedSets = JSON.parse(localStorage.getItem('questionSets') || '[]');
-    const existingIndex = savedSets.findIndex(set => set.title === questionSet.title);
-    if (existingIndex >= 0) {
-        savedSets[existingIndex] = questionSet;
-    } else {
-        savedSets.push(questionSet);
-    }
-    localStorage.setItem('questionSets', JSON.stringify(savedSets));
+
+    // ✅ 同じタイトルのセットがあったら古い方を削除
+    const filteredSets = savedSets.filter(s => s.title !== questionSet.title);
+
+    // ✅ 新しいセットを追加
+    filteredSets.push(questionSet);
+
+    // ✅ 保存
+    localStorage.setItem('questionSets', JSON.stringify(filteredSets));
 }
 
         // Select question set from list
@@ -819,21 +808,25 @@ function startExam() {
         return;
     }
 
-    
-    const shuffled = [...currentQuestionSet.questions].sort(() => Math.random() - 0.5);
-    currentExam = shuffled.slice(0, 15).map(q => {
+    //
+    const shuffledQuestions = [...currentQuestionSet.questions].sort(() => Math.random() - 0.5);
+    currentExam = shuffledQuestions.slice(0, 15).map(q => {
+        //
         const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
         const correctIndex = shuffledOptions.indexOf(q.options[q.correct]);
         return { ...q, options: shuffledOptions, correct: correctIndex };
     });
 
+    //
     currentQuestionIndex = 0;
     userAnswers = new Array(15).fill(null);
 
+    //
     document.getElementById('startScreen').classList.add('hidden');
     document.getElementById('examScreen').classList.remove('hidden');
     document.getElementById('resultsScreen').classList.add('hidden');
 
+    //
     displayQuestion();
 }
 
@@ -1112,28 +1105,16 @@ const presetFiles = [
 
   console.log("📘 StudyMod - Preloading question sets...");
 
-  for (const file of presetFiles) {
-    try {
-      const response = await fetch(`./Data/${file}`);
-      if (!response.ok) throw new Error(`${file} not found`);
-      const text = await response.text();
-      parseQuestionSet(text);
-      console.log(`✔ ${file} loaded successfully`);
-    } catch {
-
-      continue;
-    }
-  }
-
-    loadAvailableQuestionSets(); //!
-
-  // Auto display
-  const sets = JSON.parse(localStorage.getItem("questionSets") || "[]");
-  if (sets.length > 0) {
-    loadQuestionSet(sets[0]); // 1st set
-  } else {
-    console.log("ℹ No question sets were loaded.");
-  }
+for (const file of presetFiles) {
+  try {
+    const response = await fetch(`./Data/${file}`);
+    if (!response.ok) throw new Error(`${file} not found`);
+    const text = await response.text();
+    parseQuestionSet(text, file); // ← file名を渡す
+    console.log(`✔ ${file} loaded successfully`);
+  } catch {}
+}
+    loadAvailableQuestionSets();
 });
 
 
