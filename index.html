@@ -392,47 +392,8 @@
             color: #0078d4;
         }
 
-        .question-set-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .question-set-item {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: all 0.2s;
-        }
-
-        .question-set-item:hover {
-            background: #e3f2fd;
-            border-color: #0078d4;
-        }
-
-        .question-set-item-title {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        .question-set-item-info {
-            font-size: 0.9em;
-            color: #666;
-        }
-
         input[type="file"] {
             display: none;
-        }
-
-        .no-data-message {
-            text-align: center;
-            color: #666;
-            padding: 20px;
-            font-style: italic;
         }
 
         @media (max-width: 768px) {
@@ -465,9 +426,9 @@
         <div class="header">
             <div class="header-buttons">
                 <button class="header-btn" onclick="openImportModal()">📁 Import</button>
-                <button class="header-btn" onclick="openQuestionSetsModal()">📚 Question Sets</button>
+                <button class="header-btn" onclick="window.open('https://drive.google.com/drive/folders/1wMtowPdVQDGkT1QXsyH3IOQrD4YU8qf4?usp=sharing', '_blank')">📥 Download Question Files</button>
             </div>
-            <h1>☁️ StudyMOD</h1>
+            <h1>StudyMOD</h1>
             <p>Certification Practice</p>
         </div>
 
@@ -475,7 +436,7 @@
             <!-- Start Screen -->
             <div id="startScreen" class="start-screen">
                 <h2 class="question-set-title" id="questionSetTitle">Welcome to Practice Exam</h2>
-                <p class="question-set-info" id="questionSetInfo">Please import or select a question set to begin</p>
+                <p class="question-set-info" id="questionSetInfo">Please import a question set to begin</p>
                 
                 <div class="stats-grid">
                     <div class="stat-card">
@@ -563,97 +524,20 @@
         </div>
     </div>
 
-    <!-- Question Sets Modal -->
-    <div id="questionSetsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Available Question Sets</h2>
-                <button class="close-btn" onclick="closeQuestionSetsModal()">×</button>
-            </div>
-            <div id="questionSetsList" class="question-set-list"></div>
-        </div>
-    </div>
-
     <script>
         let currentQuestionSet = null;
         let currentExam = [];
         let currentQuestionIndex = 0;
         let userAnswers = [];
-        let examHistory = {};
+        let examHistory = [];
 
-        // Initialize on page load
-        window.onload = function() {
-            loadExamHistory();
-            loadAvailableQuestionSets();
-        };
-
-        // Load exam history from localStorage
-        function loadExamHistory() {
-            const saved = localStorage.getItem('examHistory');
-            if (saved) {
-                examHistory = JSON.parse(saved);
-            }
-        }
-
-        // Save exam history to localStorage
-        function saveExamHistory() {
-            localStorage.setItem('examHistory', JSON.stringify(examHistory));
-        }
-
-        // Load available question sets from Data folder
-        async function loadAvailableQuestionSets() {
-            // In a real implementation, this would scan the Data folder
-            // For this demo, we'll simulate with a predefined list
-            const questionSets = [];
-            
-            // Try to load from localStorage if previously imported
-            const savedSets = localStorage.getItem('questionSets');
-            if (savedSets) {
-                const sets = JSON.parse(savedSets);
-                questionSets.push(...sets);
-            }
-
-            displayQuestionSetsList(questionSets);
-        }
-
-        // Display question sets in modal
-        function displayQuestionSetsList(sets) {
-            const listContainer = document.getElementById('questionSetsList');
-            
-            if (sets.length === 0) {
-                listContainer.innerHTML = '<div class="no-data-message">No question sets available. Please import a question set file.</div>';
-                return;
-            }
-
-            sets.sort((a, b) => a.title.localeCompare(b.title));
-
-            listContainer.innerHTML = sets.map((set, index) => `
-                <div class="question-set-item" onclick="selectQuestionSet(${index})">
-                    <div class="question-set-item-title">${set.title}</div>
-                    <div class="question-set-item-info">${set.setName} • ${set.questions.length} questions • Pass: ${set.passRate}%</div>
-                </div>
-            `).join('');
-        }
-
-        // Open import modal
+        // Open/Close Import Modal
         function openImportModal() {
             document.getElementById('importModal').classList.add('show');
         }
 
-        // Close import modal
         function closeImportModal() {
             document.getElementById('importModal').classList.remove('show');
-        }
-
-        // Open question sets modal
-        function openQuestionSetsModal() {
-                loadAvailableQuestionSets();
-            document.getElementById('questionSetsModal').classList.add('show');
-        }
-
-        // Close question sets modal
-        function closeQuestionSetsModal() {
-            document.getElementById('questionSetsModal').classList.remove('show');
         }
 
         // Handle file import
@@ -671,68 +555,49 @@
         }
 
         // Parse question set from text file
-function parseQuestionSet(content, fileName = null) {
-    const lines = content.split('\n').map(l => l.trim()).filter(l => l);
-    if (lines.length < 2) return;
-
-    const [title, setName, passRateRaw] = lines[0].split(',').map(p => p.trim());
-    const passRate = parseInt(passRateRaw) || 70;
-
-    const questionSet = { 
-        id: fileName ? `${title}_${fileName}` : `${title}_${Date.now()}`,
-        title, 
-        setName, 
-        passRate, 
-        questions: [] 
-    };
-
-    // --- 問題パース ---
-    for (let i = 1; i < lines.length; i++) {
-        const parts = lines[i].split(',').map(p => p.trim());
-        if (parts.length < 7) continue;
-
-        const allOptions = [parts[1], parts[2], parts[3], parts[4]];
-        const correctAnswer = parts[1];
-
-        const shuffled = [...allOptions].sort(() => Math.random() - 0.5);
-        const correctIndex = shuffled.indexOf(correctAnswer);
-
-        questionSet.questions.push({
-            question: parts[0],
-            options: shuffled,
-            correct: correctIndex,
-            explanation: parts[5],
-            category: parts[6]
-        });
-    }
-
-    if (questionSet.questions.length === 0) return;
-
-    // --- localStorageの既存データを取得 ---
-    const savedSets = JSON.parse(localStorage.getItem('questionSets') || '[]');
-
-    // ✅ 同じタイトルのセットがあったら古い方を削除
-    const filteredSets = savedSets.filter(s => s.title !== questionSet.title);
-
-    // ✅ 新しいセットを追加
-    filteredSets.push(questionSet);
-
-    // ✅ 保存
-    localStorage.setItem('questionSets', JSON.stringify(filteredSets));
-}
-
-        // Select question set from list
-        function selectQuestionSet(index) {
-            const savedSets = JSON.parse(localStorage.getItem('questionSets') || '[]');
-            if (savedSets[index]) {
-                loadQuestionSet(savedSets[index]);
-                closeQuestionSetsModal();
+        function parseQuestionSet(content) {
+            const lines = content.split('\n').map(l => l.trim()).filter(l => l);
+            if (lines.length < 2) {
+                alert('Invalid file format');
+                return;
             }
+
+            const [title, setName, passRateRaw] = lines[0].split(',').map(p => p.trim());
+            const passRate = parseInt(passRateRaw) || 70;
+
+            const questionSet = { 
+                title, 
+                setName, 
+                passRate, 
+                questions: [] 
+            };
+
+            // Parse questions
+            for (let i = 1; i < lines.length; i++) {
+                const parts = lines[i].split(',').map(p => p.trim());
+                if (parts.length < 7) continue;
+
+                questionSet.questions.push({
+                    question: parts[0],
+                    options: [parts[1], parts[2], parts[3], parts[4]],
+                    correct: 0, // First option is always correct
+                    explanation: parts[5],
+                    category: parts[6]
+                });
+            }
+
+            if (questionSet.questions.length === 0) {
+                alert('No valid questions found in file');
+                return;
+            }
+
+            loadQuestionSet(questionSet);
         }
 
         // Load question set
         function loadQuestionSet(questionSet) {
             currentQuestionSet = questionSet;
+            examHistory = [];
             
             document.getElementById('questionSetTitle').textContent = questionSet.title;
             document.getElementById('questionSetInfo').textContent = `${questionSet.setName} • ${questionSet.questions.length} questions available`;
@@ -743,15 +608,12 @@ function parseQuestionSet(content, fileName = null) {
 
         // Update statistics display
         function updateStatsDisplay() {
-            if (!currentQuestionSet) return;
-
-            const history = examHistory[currentQuestionSet.title] || [];
-            const totalAttempts = history.length;
+            const totalAttempts = examHistory.length;
             const avgScore = totalAttempts > 0 
-                ? Math.round(history.reduce((sum, exam) => sum + exam.score, 0) / totalAttempts)
+                ? Math.round(examHistory.reduce((sum, exam) => sum + exam.score, 0) / totalAttempts)
                 : 0;
             const bestScore = totalAttempts > 0
-                ? Math.max(...history.map(exam => exam.score))
+                ? Math.max(...examHistory.map(exam => exam.score))
                 : 0;
 
             document.getElementById('totalAttempts').textContent = totalAttempts;
@@ -761,17 +623,17 @@ function parseQuestionSet(content, fileName = null) {
             // Update domain chart
             if (totalAttempts > 0) {
                 document.getElementById('chartSection').style.display = 'block';
-                updateDomainChart(history);
+                updateDomainChart();
             } else {
                 document.getElementById('chartSection').style.display = 'none';
             }
         }
 
         // Update domain performance chart
-        function updateDomainChart(history) {
+        function updateDomainChart() {
             const domains = {};
             
-            history.forEach(exam => {
+            examHistory.forEach(exam => {
                 exam.results.forEach(result => {
                     if (!domains[result.category]) {
                         domains[result.category] = { correct: 0, total: 0 };
@@ -802,34 +664,29 @@ function parseQuestionSet(content, fileName = null) {
         }
 
         // Start exam
-function startExam() {
-    if (!currentQuestionSet || currentQuestionSet.questions.length < 15) {
-        alert('Not enough questions available. Need at least 15 questions.');
-        return;
-    }
+        function startExam() {
+            if (!currentQuestionSet || currentQuestionSet.questions.length < 15) {
+                alert('Not enough questions available. Need at least 15 questions.');
+                return;
+            }
 
-    //
-    const shuffledQuestions = [...currentQuestionSet.questions].sort(() => Math.random() - 0.5);
-    currentExam = shuffledQuestions.slice(0, 15).map(q => {
-        //
-        const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
-        const correctIndex = shuffledOptions.indexOf(q.options[q.correct]);
-        return { ...q, options: shuffledOptions, correct: correctIndex };
-    });
+            // Shuffle and select 15 questions
+            const shuffledQuestions = [...currentQuestionSet.questions].sort(() => Math.random() - 0.5);
+            currentExam = shuffledQuestions.slice(0, 15).map(q => {
+                const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
+                const correctIndex = shuffledOptions.indexOf(q.options[q.correct]);
+                return { ...q, options: shuffledOptions, correct: correctIndex };
+            });
 
-    //
-    currentQuestionIndex = 0;
-    userAnswers = new Array(15).fill(null);
+            currentQuestionIndex = 0;
+            userAnswers = new Array(15).fill(null);
 
-    //
-    document.getElementById('startScreen').classList.add('hidden');
-    document.getElementById('examScreen').classList.remove('hidden');
-    document.getElementById('resultsScreen').classList.add('hidden');
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('examScreen').classList.remove('hidden');
+            document.getElementById('resultsScreen').classList.add('hidden');
 
-    //
-    displayQuestion();
-}
-
+            displayQuestion();
+        }
 
         // Display current question
         function displayQuestion() {
@@ -923,15 +780,11 @@ function startExam() {
             const passed = score >= currentQuestionSet.passRate;
 
             // Save to history
-            if (!examHistory[currentQuestionSet.title]) {
-                examHistory[currentQuestionSet.title] = [];
-            }
-            examHistory[currentQuestionSet.title].push({
+            examHistory.push({
                 date: new Date().toISOString(),
                 score: score,
                 results: results
             });
-            saveExamHistory();
 
             displayResults(score, correctCount, passed, results);
         }
@@ -990,135 +843,6 @@ function startExam() {
             document.getElementById('startScreen').classList.remove('hidden');
             updateStatsDisplay();
         }
-
-// Auto loading
-window.addEventListener("load", async () => {
-  // list up
-const presetFiles = [
-  "AZ-900_Practice_Set_1.txt",
-  "AZ-900_Practice_Set_2.txt",
-  "AZ-900_Practice_Set_3.txt",
-  "az900-sample-questions.txt",
-  "az900-sample-questions2.txt",
-  "1.txt",
-  "2.txt",
-  "3.txt",
-  "4.txt",
-  "5.txt",
-  "6.txt",
-  "7.txt",
-  "8.txt",
-  "9.txt",
-  "10.txt",
-  "11.txt",
-  "12.txt",
-  "13.txt",
-  "14.txt",
-  "15.txt",
-  "16.txt",
-  "17.txt",
-  "18.txt",
-  "19.txt",
-  "20.txt",
-  "21.txt",
-  "22.txt",
-  "23.txt",
-  "24.txt",
-  "25.txt",
-  "26.txt",
-  "27.txt",
-  "28.txt",
-  "29.txt",
-  "30.txt",
-  "31.txt",
-  "32.txt",
-  "33.txt",
-  "34.txt",
-  "35.txt",
-  "36.txt",
-  "37.txt",
-  "38.txt",
-  "39.txt",
-  "40.txt",
-  "41.txt",
-  "42.txt",
-  "43.txt",
-  "44.txt",
-  "45.txt",
-  "46.txt",
-  "47.txt",
-  "48.txt",
-  "49.txt",
-  "50.txt",
-  "51.txt",
-  "52.txt",
-  "53.txt",
-  "54.txt",
-  "55.txt",
-  "56.txt",
-  "57.txt",
-  "58.txt",
-  "59.txt",
-  "60.txt",
-  "61.txt",
-  "62.txt",
-  "63.txt",
-  "64.txt",
-  "65.txt",
-  "66.txt",
-  "67.txt",
-  "68.txt",
-  "69.txt",
-  "70.txt",
-  "71.txt",
-  "72.txt",
-  "73.txt",
-  "74.txt",
-  "75.txt",
-  "76.txt",
-  "77.txt",
-  "78.txt",
-  "79.txt",
-  "80.txt",
-  "81.txt",
-  "82.txt",
-  "83.txt",
-  "84.txt",
-  "85.txt",
-  "86.txt",
-  "87.txt",
-  "88.txt",
-  "89.txt",
-  "90.txt",
-  "91.txt",
-  "92.txt",
-  "93.txt",
-  "94.txt",
-  "95.txt",
-  "96.txt",
-  "97.txt",
-  "98.txt",
-  "99.txt",
-  "100.txt"
-];
-
-
-  console.log("📘 StudyMod - Preloading question sets...");
-
-for (const file of presetFiles) {
-  try {
-    const response = await fetch(`./Data/${file}`);
-    if (!response.ok) throw new Error(`${file} not found`);
-    const text = await response.text();
-    parseQuestionSet(text, file); // ← file名を渡す
-    console.log(`✔ ${file} loaded successfully`);
-  } catch {}
-}
-    loadAvailableQuestionSets();
-});
-
-
-
     </script>
 </body>
 </html>
