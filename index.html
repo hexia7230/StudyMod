@@ -675,14 +675,13 @@ function parseQuestionSet(content) {
     const lines = content.split('\n').map(line => line.trim()).filter(line => line);
 
     if (lines.length < 2) {
-        console.warn('Invalid file format — skipping this file.');
+        console.warn('x Invalid file format — skipping this file.');
         return;
     }
 
-    // Parse header line
     const headerParts = lines[0].split(',').map(part => part.trim());
     if (headerParts.length < 3) {
-        console.warn('Invalid header format — skipping this file.');
+        console.warn('x Invalid header format — skipping this file.');
         return;
     }
 
@@ -693,36 +692,48 @@ function parseQuestionSet(content) {
         questions: []
     };
 
+    // --- shuffle helper
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
     // Parse question lines
     for (let i = 1; i < lines.length; i++) {
         const parts = lines[i].split(',').map(part => part.trim());
         if (parts.length < 7) continue;
 
+        const allOptions = [parts[1], parts[2], parts[3], parts[4]];
+        const correctAnswer = parts[1]; 
+        const shuffled = shuffleArray([...allOptions]);
+        const correctIndex = shuffled.indexOf(correctAnswer);
+
         questionSet.questions.push({
             question: parts[0],
-            options: [parts[1], parts[2], parts[3], parts[4]],
-            correct: 0, // always first option
+            options: shuffled,
+            correct: correctIndex,
             explanation: parts[5],
             category: parts[6]
         });
     }
 
     if (questionSet.questions.length === 0) {
-        console.warn(`No valid questions found in "${questionSet.title}". Skipped.`);
+        console.warn(`x No valid questions found in "${questionSet.title}". Skipped.`);
         return;
     }
 
-    // Save to localStorage
     let savedSets = [];
     const savedSetsStr = localStorage.getItem('questionSets');
     if (savedSetsStr) savedSets = JSON.parse(savedSetsStr);
 
-    // Remove existing set with same title
     savedSets = savedSets.filter(set => set.title !== questionSet.title);
     savedSets.push(questionSet);
     localStorage.setItem('questionSets', JSON.stringify(savedSets));
 
-   // console.log(`Loaded "${questionSet.title}" (${questionSet.questions.length} questions)`);
+    console.log(` ...Loaded "${questionSet.title}" (${questionSet.questions.length} questions)`);
 }
 
         // Select question set from list
