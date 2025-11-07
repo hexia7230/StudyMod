@@ -671,69 +671,59 @@
         }
 
         // Parse question set from text file
-        function parseQuestionSet(content) {
-            const lines = content.split('\n').map(line => line.trim()).filter(line => line);
-            
-            if (lines.length < 2) {
-                alert('Invalid file format. Please check your question set file.');
-                return;
-            }
+function parseQuestionSet(content) {
+    const lines = content.split('\n').map(line => line.trim()).filter(line => line);
 
-            // Parse header line
-            const headerParts = lines[0].split(',').map(part => part.trim());
-            if (headerParts.length < 3) {
-                alert('Invalid header format. Expected: Title, Set Name, Pass Rate');
-                return;
-            }
+    if (lines.length < 2) {
+        console.warn('Invalid file format — skipping this file.');
+        return;
+    }
 
-            const questionSet = {
-                title: headerParts[0],
-                setName: headerParts[1],
-                passRate: parseInt(headerParts[2]) || 70,
-                questions: []
-            };
+    // Parse header line
+    const headerParts = lines[0].split(',').map(part => part.trim());
+    if (headerParts.length < 3) {
+        console.warn('Invalid header format — skipping this file.');
+        return;
+    }
 
-            // Parse question lines
-            for (let i = 1; i < lines.length; i++) {
-                const parts = lines[i].split(',').map(part => part.trim());
-                
-                if (parts.length < 7) continue;
+    const questionSet = {
+        title: headerParts[0],
+        setName: headerParts[1],
+        passRate: parseInt(headerParts[2]) || 70,
+        questions: []
+    };
 
-                questionSet.questions.push({
-                    question: parts[0],
-                    options: [parts[1], parts[2], parts[3], parts[4]],
-                    correct: 0, // First option is always correct
-                    explanation: parts[5],
-                    category: parts[6]
-                });
-            }
+    // Parse question lines
+    for (let i = 1; i < lines.length; i++) {
+        const parts = lines[i].split(',').map(part => part.trim());
+        if (parts.length < 7) continue;
 
-            if (questionSet.questions.length === 0) {
-                alert('No valid questions found in the file.');
-                return;
-            }
+        questionSet.questions.push({
+            question: parts[0],
+            options: [parts[1], parts[2], parts[3], parts[4]],
+            correct: 0, // always first option
+            explanation: parts[5],
+            category: parts[6]
+        });
+    }
 
-            // Save to localStorage
-            let savedSets = [];
-            const savedSetsStr = localStorage.getItem('questionSets');
-            if (savedSetsStr) {
-                savedSets = JSON.parse(savedSetsStr);
-            }
+    if (questionSet.questions.length === 0) {
+        console.warn(`No valid questions found in "${questionSet.title}". Skipped.`);
+        return;
+    }
 
-            // Remove existing set with same title
-            savedSets = savedSets.filter(set => set.title !== questionSet.title);
-            savedSets.push(questionSet);
-            localStorage.setItem('questionSets', JSON.stringify(savedSets));
+    // Save to localStorage
+    let savedSets = [];
+    const savedSetsStr = localStorage.getItem('questionSets');
+    if (savedSetsStr) savedSets = JSON.parse(savedSetsStr);
 
-// Remove existing set with same title
-savedSets = savedSets.filter(set => set.title !== questionSet.title);
-savedSets.push(questionSet);
-localStorage.setItem('questionSets', JSON.stringify(savedSets));
+    // Remove existing set with same title
+    savedSets = savedSets.filter(set => set.title !== questionSet.title);
+    savedSets.push(questionSet);
+    localStorage.setItem('questionSets', JSON.stringify(savedSets));
 
-// loadQuestionSet(questionSet);
-//alert(`Successfully imported "${questionSet.title}" with ${questionSet.questions.length} questions!`);
-
-        }
+   // console.log(`Loaded "${questionSet.title}" (${questionSet.questions.length} questions)`);
+}
 
         // Select question set from list
         function selectQuestionSet(index) {
@@ -1117,7 +1107,7 @@ const presetFiles = [
       parseQuestionSet(text);
       console.log(`✔ ${file} loaded successfully`);
     } catch {
-      // ファイルが存在しない場合やエラー時は何もせずスキップ
+
       continue;
     }
   }
