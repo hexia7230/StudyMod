@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyMOD</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0078d4 0%, #00bcf2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #0078d4;
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .header-buttons {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .header-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+
+        .header-btn:hover {
+            background: white;
+            color: #0078d4;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .start-screen {
+            text-align: center;
+        }
+
+        .question-set-title {
+            font-size: 1.8em;
+            color: #0078d4;
+            margin-bottom: 10px;
+        }
+
+        .question-set-info {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #0078d4;
+        }
+
+        .stat-card h3 {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 2em;
+            color: #0078d4;
+            font-weight: bold;
+        }
+
+        .chart-container {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .chart-title {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .chart-bar {
+            margin-bottom: 15px;
+        }
+
+        .chart-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .bar-bg {
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0078d4, #00bcf2);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.85em;
+        }
+
+        .btn {
+            background: #0078d4;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            background: #005a9e;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 120, 212, 0.3);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .question-container {
+            margin-bottom: 30px;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .question-number {
+            font-size: 1.1em;
+            color: #0078d4;
+            font-weight: 600;
+        }
+
+        .question-category {
+            background: #e3f2fd;
+            color: #0078d4;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .question-text {
+            font-size: 1.2em;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: #333;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option {
+            background: #f9f9f9;
+            padding: 15px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+        }
+
+        .option:hover {
+            background: #e3f2fd;
+            border-color: #0078d4;
+        }
+
+        .option.selected {
+            background: #e3f2fd;
+            border-color: #0078d4;
+        }
+
+        .option-label {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background: #0078d4;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            margin-right: 15px;
+            font-weight: 600;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0078d4, #00bcf2);
+            transition: width 0.3s ease;
+        }
+
+        .results-screen {
+            text-align: center;
+        }
+
+        .score-display {
+            font-size: 4em;
+            color: #0078d4;
+            font-weight: bold;
+            margin: 30px 0;
+        }
+
+        .pass-fail {
+            font-size: 1.5em;
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .pass {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .fail {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .review-container {
+            text-align: left;
+            margin-top: 40px;
+        }
+
+        .review-question {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #0078d4;
+        }
+
+        .review-question.wrong {
+            border-left-color: #dc3545;
+        }
+
+        .explanation {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .explanation-title {
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 8px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            width: 90%;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .modal-header h2 {
+            color: #0078d4;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .close-btn:hover {
+            color: #0078d4;
+        }
+
+        .question-set-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .question-set-item {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .question-set-item:hover {
+            background: #e3f2fd;
+            border-color: #0078d4;
+        }
+
+        .question-set-item-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .question-set-item-info {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .no-data-message {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 20px;
+            }
+
+            .header-buttons {
+                position: static;
+                justify-content: center;
+                margin-top: 15px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .question-text {
+                font-size: 1.1em;
+            }
+
+            .score-display {
+                font-size: 3em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-buttons">
+                <button class="header-btn" onclick="openImportModal()">📁 Import</button>
+                <button class="header-btn" onclick="openQuestionSetsModal()">📚 Question Sets</button>
+            </div>
+            <h1>☁️ StudyMOD</h1>
+            <p>Certification Practice</p>
+        </div>
+
+        <div class="content">
+            <!-- Start Screen -->
+            <div id="startScreen" class="start-screen">
+                <h2 class="question-set-title" id="questionSetTitle">Welcome to Practice Exam</h2>
+                <p class="question-set-info" id="questionSetInfo">Please import or select a question set to begin</p>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Attempts</h3>
+                        <div class="value" id="totalAttempts">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Average Score</h3>
+                        <div class="value" id="avgScore">0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Best Score</h3>
+                        <div class="value" id="bestScore">0%</div>
+                    </div>
+                </div>
+
+                <div class="chart-container" id="chartSection" style="display: none;">
+                    <div class="chart-title">Performance by Domain</div>
+                    <div id="domainChart"></div>
+                </div>
+
+                <button class="btn" id="startExamBtn" onclick="startExam()" disabled>Start Exam (15 Questions)</button>
+            </div>
+
+            <!-- Exam Screen -->
+            <div id="examScreen" class="hidden">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                
+                <div id="questionContainer"></div>
+
+                <div class="navigation">
+                    <button class="btn" id="prevBtn" onclick="previousQuestion()" disabled>Previous</button>
+                    <button class="btn" id="nextBtn" onclick="nextQuestion()">Next</button>
+                    <button class="btn" id="submitBtn" onclick="submitExam()" style="display:none;">Submit Exam</button>
+                </div>
+            </div>
+
+            <!-- Results Screen -->
+            <div id="resultsScreen" class="hidden results-screen">
+                <h2>Exam Results</h2>
+                <div class="score-display" id="finalScore"></div>
+                <div class="pass-fail" id="passFail"></div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Correct Answers</h3>
+                        <div class="value" id="correctCount"></div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Incorrect Answers</h3>
+                        <div class="value" id="incorrectCount"></div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Pass Rate Required</h3>
+                        <div class="value" id="requiredPassRate">70%</div>
+                    </div>
+                </div>
+
+                <div class="review-container">
+                    <h3 style="margin-bottom: 20px;">Review Your Answers</h3>
+                    <div id="reviewContainer"></div>
+                </div>
+
+                <button class="btn" onclick="restartExam()" style="margin-top: 30px;">Return to Start</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div id="importModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Import Question Set</h2>
+                <button class="close-btn" onclick="closeImportModal()">×</button>
+            </div>
+            <p style="margin-bottom: 20px;">Select a text file containing your question set. The file should follow the format:</p>
+            <div style="background: #f9f9f9; padding: 15px; border-radius: 6px; margin-bottom: 20px; font-family: monospace; font-size: 0.9em;">
+                Line 1: Title, Set Name, Pass Rate<br>
+                Line 2+: Question, Answer1 (correct), Answer2, Answer3, Answer4, Explanation, Category
+            </div>
+            <input type="file" id="fileInput" accept=".txt" onchange="handleFileImport(event)">
+            <button class="btn" onclick="document.getElementById('fileInput').click()">Choose File</button>
+        </div>
+    </div>
+
+    <!-- Question Sets Modal -->
+    <div id="questionSetsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Available Question Sets</h2>
+                <button class="close-btn" onclick="closeQuestionSetsModal()">×</button>
+            </div>
+            <div id="questionSetsList" class="question-set-list"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestionSet = null;
+        let currentExam = [];
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+        let examHistory = {};
+
+        // Initialize on page load
+        window.onload = function() {
+            loadExamHistory();
+            loadAvailableQuestionSets();
+        };
+
+        // Load exam history from localStorage
+        function loadExamHistory() {
+            const saved = localStorage.getItem('examHistory');
+            if (saved) {
+                examHistory = JSON.parse(saved);
+            }
+        }
+
+        // Save exam history to localStorage
+        function saveExamHistory() {
+            localStorage.setItem('examHistory', JSON.stringify(examHistory));
+        }
+
+        // Load available question sets from Data folder
+        async function loadAvailableQuestionSets() {
+            // In a real implementation, this would scan the Data folder
+            // For this demo, we'll simulate with a predefined list
+            const questionSets = [];
+            
+            // Try to load from localStorage if previously imported
+            const savedSets = localStorage.getItem('questionSets');
+            if (savedSets) {
+                const sets = JSON.parse(savedSets);
+                questionSets.push(...sets);
+            }
+
+            displayQuestionSetsList(questionSets);
+        }
+
+        // Display question sets in modal
+        function displayQuestionSetsList(sets) {
+            const listContainer = document.getElementById('questionSetsList');
+            
+            if (sets.length === 0) {
+                listContainer.innerHTML = '<div class="no-data-message">No question sets available. Please import a question set file.</div>';
+                return;
+            }
+
+            sets.sort((a, b) => a.title.localeCompare(b.title));
+
+            listContainer.innerHTML = sets.map((set, index) => `
+                <div class="question-set-item" onclick="selectQuestionSet(${index})">
+                    <div class="question-set-item-title">${set.title}</div>
+                    <div class="question-set-item-info">${set.setName} • ${set.questions.length} questions • Pass: ${set.passRate}%</div>
+                </div>
+            `).join('');
+        }
+
+        // Open import modal
+        function openImportModal() {
+            document.getElementById('importModal').classList.add('show');
+        }
+
+        // Close import modal
+        function closeImportModal() {
+            document.getElementById('importModal').classList.remove('show');
+        }
+
+        // Open question sets modal
+        function openQuestionSetsModal() {
+            document.getElementById('questionSetsModal').classList.add('show');
+            loadAvailableQuestionSets();
+        }
+
+        // Close question sets modal
+        function closeQuestionSetsModal() {
+            document.getElementById('questionSetsModal').classList.remove('show');
+        }
+
+        // Handle file import
+        function handleFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                parseQuestionSet(content);
+                closeImportModal();
+            };
+            reader.readAsText(file);
+        }
+
+        // Parse question set from text file
+        function parseQuestionSet(content) {
+            const lines = content.split('\n').map(line => line.trim()).filter(line => line);
+            
+            if (lines.length < 2) {
+                alert('Invalid file format. Please check your question set file.');
+                return;
+            }
+
+            // Parse header line
+            const headerParts = lines[0].split(',').map(part => part.trim());
+            if (headerParts.length < 3) {
+                alert('Invalid header format. Expected: Title, Set Name, Pass Rate');
+                return;
+            }
+
+            const questionSet = {
+                title: headerParts[0],
+                setName: headerParts[1],
+                passRate: parseInt(headerParts[2]) || 70,
+                questions: []
+            };
+
+            // Parse question lines
+            for (let i = 1; i < lines.length; i++) {
+                const parts = lines[i].split(',').map(part => part.trim());
+                
+                if (parts.length < 7) continue;
+
+                questionSet.questions.push({
+                    question: parts[0],
+                    options: [parts[1], parts[2], parts[3], parts[4]],
+                    correct: 0, // First option is always correct
+                    explanation: parts[5],
+                    category: parts[6]
+                });
+            }
+
+            if (questionSet.questions.length === 0) {
+                alert('No valid questions found in the file.');
+                return;
+            }
+
+            // Save to localStorage
+            let savedSets = [];
+            const savedSetsStr = localStorage.getItem('questionSets');
+            if (savedSetsStr) {
+                savedSets = JSON.parse(savedSetsStr);
+            }
+
+            // Remove existing set with same title
+            savedSets = savedSets.filter(set => set.title !== questionSet.title);
+            savedSets.push(questionSet);
+            localStorage.setItem('questionSets', JSON.stringify(savedSets));
+
+            // Load this question set
+            loadQuestionSet(questionSet);
+            alert(`Successfully imported "${questionSet.title}" with ${questionSet.questions.length} questions!`);
+        }
+
+        // Select question set from list
+        function selectQuestionSet(index) {
+            const savedSets = JSON.parse(localStorage.getItem('questionSets') || '[]');
+            if (savedSets[index]) {
+                loadQuestionSet(savedSets[index]);
+                closeQuestionSetsModal();
+            }
+        }
+
+        // Load question set
+        function loadQuestionSet(questionSet) {
+            currentQuestionSet = questionSet;
+            
+            document.getElementById('questionSetTitle').textContent = questionSet.title;
+            document.getElementById('questionSetInfo').textContent = `${questionSet.setName} • ${questionSet.questions.length} questions available`;
+            document.getElementById('startExamBtn').disabled = false;
+            
+            updateStatsDisplay();
+        }
+
+        // Update statistics display
+        function updateStatsDisplay() {
+            if (!currentQuestionSet) return;
+
+            const history = examHistory[currentQuestionSet.title] || [];
+            const totalAttempts = history.length;
+            const avgScore = totalAttempts > 0 
+                ? Math.round(history.reduce((sum, exam) => sum + exam.score, 0) / totalAttempts)
+                : 0;
+            const bestScore = totalAttempts > 0
+                ? Math.max(...history.map(exam => exam.score))
+                : 0;
+
+            document.getElementById('totalAttempts').textContent = totalAttempts;
+            document.getElementById('avgScore').textContent = avgScore + '%';
+            document.getElementById('bestScore').textContent = bestScore + '%';
+
+            // Update domain chart
+            if (totalAttempts > 0) {
+                document.getElementById('chartSection').style.display = 'block';
+                updateDomainChart(history);
+            } else {
+                document.getElementById('chartSection').style.display = 'none';
+            }
+        }
+
+        // Update domain performance chart
+        function updateDomainChart(history) {
+            const domains = {};
+            
+            history.forEach(exam => {
+                exam.results.forEach(result => {
+                    if (!domains[result.category]) {
+                        domains[result.category] = { correct: 0, total: 0 };
+                    }
+                    domains[result.category].total++;
+                    if (result.isCorrect) {
+                        domains[result.category].correct++;
+                    }
+                });
+            });
+
+            const chartHTML = Object.keys(domains).sort().map(domain => {
+                const percentage = Math.round((domains[domain].correct / domains[domain].total) * 100);
+                return `
+                    <div class="chart-bar">
+                        <div class="chart-label">
+                            <span>${domain}</span>
+                            <span>${percentage}% (${domains[domain].correct}/${domains[domain].total})</span>
+                        </div>
+                        <div class="bar-bg">
+                            <div class="bar-fill" style="width: ${percentage}%">${percentage}%</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('domainChart').innerHTML = chartHTML;
+        }
+
+        // Start exam
+        function startExam() {
+            if (!currentQuestionSet || currentQuestionSet.questions.length < 15) {
+                alert('Not enough questions available. Need at least 15 questions.');
+                return;
+            }
+
+            // Randomly select 15 questions
+            const shuffled = [...currentQuestionSet.questions].sort(() => Math.random() - 0.5);
+            currentExam = shuffled.slice(0, 15);
+            currentQuestionIndex = 0;
+            userAnswers = new Array(15).fill(null);
+
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('examScreen').classList.remove('hidden');
+            document.getElementById('resultsScreen').classList.add('hidden');
+
+            displayQuestion();
+        }
+
+        // Display current question
+        function displayQuestion() {
+            const question = currentExam[currentQuestionIndex];
+            const questionHTML = `
+                <div class="question-container">
+                    <div class="question-header">
+                        <div class="question-number">Question ${currentQuestionIndex + 1} of ${currentExam.length}</div>
+                        <div class="question-category">${question.category}</div>
+                    </div>
+                    <div class="question-text">${question.question}</div>
+                    <div class="options">
+                        ${question.options.map((option, index) => `
+                            <div class="option ${userAnswers[currentQuestionIndex] === index ? 'selected' : ''}" 
+                                 onclick="selectOption(${index})">
+                                <span class="option-label">${String.fromCharCode(65 + index)}</span>
+                                <span>${option}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('questionContainer').innerHTML = questionHTML;
+            updateNavigation();
+            updateProgress();
+        }
+
+        // Select answer option
+        function selectOption(optionIndex) {
+            userAnswers[currentQuestionIndex] = optionIndex;
+            displayQuestion();
+        }
+
+        // Update navigation buttons
+        function updateNavigation() {
+            document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
+            
+            if (currentQuestionIndex === currentExam.length - 1) {
+                document.getElementById('nextBtn').style.display = 'none';
+                document.getElementById('submitBtn').style.display = 'inline-block';
+            } else {
+                document.getElementById('nextBtn').style.display = 'inline-block';
+                document.getElementById('submitBtn').style.display = 'none';
+            }
+        }
+
+        // Update progress bar
+        function updateProgress() {
+            const progress = ((currentQuestionIndex + 1) / currentExam.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        // Navigate to previous question
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                displayQuestion();
+            }
+        }
+
+        // Navigate to next question
+        function nextQuestion() {
+            if (currentQuestionIndex < currentExam.length - 1) {
+                currentQuestionIndex++;
+                displayQuestion();
+            }
+        }
+
+        // Submit exam
+        function submitExam() {
+            const unanswered = userAnswers.filter(a => a === null).length;
+            if (unanswered > 0) {
+                if (!confirm(`You have ${unanswered} unanswered question(s). Submit anyway?`)) {
+                    return;
+                }
+            }
+
+            const results = currentExam.map((question, index) => ({
+                question: question.question,
+                category: question.category,
+                options: question.options,
+                correctAnswer: question.correct,
+                userAnswer: userAnswers[index],
+                isCorrect: userAnswers[index] === question.correct,
+                explanation: question.explanation
+            }));
+
+            const correctCount = results.filter(r => r.isCorrect).length;
+            const score = Math.round((correctCount / currentExam.length) * 100);
+            const passed = score >= currentQuestionSet.passRate;
+
+            // Save to history
+            if (!examHistory[currentQuestionSet.title]) {
+                examHistory[currentQuestionSet.title] = [];
+            }
+            examHistory[currentQuestionSet.title].push({
+                date: new Date().toISOString(),
+                score: score,
+                results: results
+            });
+            saveExamHistory();
+
+            displayResults(score, correctCount, passed, results);
+        }
+
+        // Display exam results
+        function displayResults(score, correctCount, passed, results) {
+            document.getElementById('examScreen').classList.add('hidden');
+            document.getElementById('resultsScreen').classList.remove('hidden');
+
+            document.getElementById('finalScore').textContent = score + '%';
+            document.getElementById('correctCount').textContent = correctCount;
+            document.getElementById('incorrectCount').textContent = currentExam.length - correctCount;
+            document.getElementById('requiredPassRate').textContent = currentQuestionSet.passRate + '%';
+
+            const passFailDiv = document.getElementById('passFail');
+            if (passed) {
+                passFailDiv.className = 'pass-fail pass';
+                passFailDiv.innerHTML = '🎉 Congratulations! You Passed!';
+            } else {
+                passFailDiv.className = 'pass-fail fail';
+                passFailDiv.innerHTML = '❌ You did not pass this time. Keep studying!';
+            }
+
+            // Display review
+            const reviewHTML = results.map((result, index) => `
+                <div class="review-question ${!result.isCorrect ? 'wrong' : ''}">
+                    <div style="font-weight: 600; margin-bottom: 10px;">
+                        Question ${index + 1}: ${result.isCorrect ? '✅ Correct' : '❌ Incorrect'}
+                    </div>
+                    <div style="margin-bottom: 10px;">${result.question}</div>
+                    <div style="margin-bottom: 5px;">
+                        <strong>Your Answer:</strong> 
+                        <span style="color: ${result.isCorrect ? '#28a745' : '#dc3545'}">
+                            ${result.userAnswer !== null ? result.options[result.userAnswer] : 'Not answered'}
+                        </span>
+                    </div>
+                    ${!result.isCorrect ? `
+                        <div style="margin-bottom: 10px;">
+                            <strong>Correct Answer:</strong> 
+                            <span style="color: #28a745">${result.options[result.correctAnswer]}</span>
+                        </div>
+                    ` : ''}
+                    <div class="explanation">
+                        <div class="explanation-title">💡 Explanation:</div>
+                        <div>${result.explanation}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('reviewContainer').innerHTML = reviewHTML;
+        }
+
+        // Restart exam (return to start screen)
+        function restartExam() {
+            document.getElementById('resultsScreen').classList.add('hidden');
+            document.getElementById('startScreen').classList.remove('hidden');
+            updateStatsDisplay();
+        }
+
+// Auto loading
+window.addEventListener("load", async () => {
+  // list up
+const presetFiles = [
+  "AZ-900_Practice_Set_1.txt",
+  "AZ-900_Practice_Set_2.txt",
+  "AZ-900_Practice_Set_3.txt",
+  "az900-sample-questions.txt",
+  "az900-sample-questions2.txt",
+  "1.txt",
+  "2.txt",
+  "3.txt",
+  "4.txt",
+  "5.txt",
+  "6.txt",
+  "7.txt",
+  "8.txt",
+  "9.txt",
+  "10.txt",
+  "11.txt",
+  "12.txt",
+  "13.txt",
+  "14.txt",
+  "15.txt",
+  "16.txt",
+  "17.txt",
+  "18.txt",
+  "19.txt",
+  "20.txt",
+  "21.txt",
+  "22.txt",
+  "23.txt",
+  "24.txt",
+  "25.txt",
+  "26.txt",
+  "27.txt",
+  "28.txt",
+  "29.txt",
+  "30.txt",
+  "31.txt",
+  "32.txt",
+  "33.txt",
+  "34.txt",
+  "35.txt",
+  "36.txt",
+  "37.txt",
+  "38.txt",
+  "39.txt",
+  "40.txt",
+  "41.txt",
+  "42.txt",
+  "43.txt",
+  "44.txt",
+  "45.txt",
+  "46.txt",
+  "47.txt",
+  "48.txt",
+  "49.txt",
+  "50.txt",
+  "51.txt",
+  "52.txt",
+  "53.txt",
+  "54.txt",
+  "55.txt",
+  "56.txt",
+  "57.txt",
+  "58.txt",
+  "59.txt",
+  "60.txt",
+  "61.txt",
+  "62.txt",
+  "63.txt",
+  "64.txt",
+  "65.txt",
+  "66.txt",
+  "67.txt",
+  "68.txt",
+  "69.txt",
+  "70.txt",
+  "71.txt",
+  "72.txt",
+  "73.txt",
+  "74.txt",
+  "75.txt",
+  "76.txt",
+  "77.txt",
+  "78.txt",
+  "79.txt",
+  "80.txt",
+  "81.txt",
+  "82.txt",
+  "83.txt",
+  "84.txt",
+  "85.txt",
+  "86.txt",
+  "87.txt",
+  "88.txt",
+  "89.txt",
+  "90.txt",
+  "91.txt",
+  "92.txt",
+  "93.txt",
+  "94.txt",
+  "95.txt",
+  "96.txt",
+  "97.txt",
+  "98.txt",
+  "99.txt",
+  "100.txt"
+];
+
+
+  console.log("📘 StudyMod - Preloading question sets...");
+
+  for (const file of presetFiles) {
+    try {
+      const response = await fetch(`./Data/${file}`);
+      if (!response.ok) throw new Error(`${file} not found`);
+      const text = await response.text();
+      parseQuestionSet(text);
+      console.log(`✔ ${file} loaded successfully`);
+    } catch {
+      // ファイルが存在しない場合やエラー時は何もせずスキップ
+      continue;
+    }
+  }
+
+  // Auto display
+  const sets = JSON.parse(localStorage.getItem("questionSets") || "[]");
+  if (sets.length > 0) {
+    loadQuestionSet(sets[0]); // 1st set
+  } else {
+    console.log("ℹ No question sets were loaded.");
+  }
+});
+
+
+
+    </script>
+</body>
+</html>
