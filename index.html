@@ -720,20 +720,16 @@ function parseQuestionSet(content) {
         });
     }
 
-    if (questionSet.questions.length === 0) {
-        console.warn(`x No valid questions found in "${questionSet.title}". Skipped.`);
-        return;
+     if (questionSet.questions.length === 0) return;
+
+    const savedSets = JSON.parse(localStorage.getItem('questionSets') || '[]');
+    const existingIndex = savedSets.findIndex(set => set.title === questionSet.title);
+    if (existingIndex >= 0) {
+        savedSets[existingIndex] = questionSet;
+    } else {
+        savedSets.push(questionSet);
     }
-
-    let savedSets = [];
-    const savedSetsStr = localStorage.getItem('questionSets');
-    if (savedSetsStr) savedSets = JSON.parse(savedSetsStr);
-
-    savedSets = savedSets.filter(set => set.title !== questionSet.title);
-    savedSets.push(questionSet);
     localStorage.setItem('questionSets', JSON.stringify(savedSets));
-
-    console.log(` ...Loaded "${questionSet.title}" (${questionSet.questions.length} questions)`);
 }
 
         // Select question set from list
@@ -817,24 +813,30 @@ function parseQuestionSet(content) {
         }
 
         // Start exam
-        function startExam() {
-            if (!currentQuestionSet || currentQuestionSet.questions.length < 15) {
-                alert('Not enough questions available. Need at least 15 questions.');
-                return;
-            }
+function startExam() {
+    if (!currentQuestionSet || currentQuestionSet.questions.length < 15) {
+        alert('Not enough questions available. Need at least 15 questions.');
+        return;
+    }
 
-            // Randomly select 15 questions
-            const shuffled = [...currentQuestionSet.questions].sort(() => Math.random() - 0.5);
-            currentExam = shuffled.slice(0, 15);
-            currentQuestionIndex = 0;
-            userAnswers = new Array(15).fill(null);
+    
+    const shuffled = [...currentQuestionSet.questions].sort(() => Math.random() - 0.5);
+    currentExam = shuffled.slice(0, 15).map(q => {
+        const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
+        const correctIndex = shuffledOptions.indexOf(q.options[q.correct]);
+        return { ...q, options: shuffledOptions, correct: correctIndex };
+    });
 
-            document.getElementById('startScreen').classList.add('hidden');
-            document.getElementById('examScreen').classList.remove('hidden');
-            document.getElementById('resultsScreen').classList.add('hidden');
+    currentQuestionIndex = 0;
+    userAnswers = new Array(15).fill(null);
 
-            displayQuestion();
-        }
+    document.getElementById('startScreen').classList.add('hidden');
+    document.getElementById('examScreen').classList.remove('hidden');
+    document.getElementById('resultsScreen').classList.add('hidden');
+
+    displayQuestion();
+}
+
 
         // Display current question
         function displayQuestion() {
@@ -1122,6 +1124,8 @@ const presetFiles = [
       continue;
     }
   }
+
+    loadAvailableQuestionSets(); //!
 
   // Auto display
   const sets = JSON.parse(localStorage.getItem("questionSets") || "[]");
